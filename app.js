@@ -1,33 +1,28 @@
 function salvarGasto() {
-
   const categoria = document.getElementById("categoria").value;
   const valor = document.getElementById("valor").value;
   const descricao = document.getElementById("descricao").value;
 
-  if (!valor) {
-    alert("Informe um valor");
-    return;
-  }
-
-  const data = new Date().toLocaleDateString("pt-BR");
-
-  const url =
-    "https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec" +
-    "?data=" + encodeURIComponent(data) +
-    "&categoria=" + encodeURIComponent(categoria) +
-    "&valor=" + encodeURIComponent(valor) +
-    "&descricao=" + encodeURIComponent(descricao);
-
-  fetch(url)
-    .then(() => {
-      alert("Gasto salvo com sucesso!");
-      document.getElementById("valor").value = "";
-      document.getElementById("descricao").value = "";
+  fetch("https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      categoria,
+      valor,
+      descricao
     })
-    .catch(() => {
-      alert("Erro ao salvar gasto");
-    });
+  })
+  .then(() => {
+    alert("Gasto salvo com sucesso!");
+  })
+  .catch(() => {
+    alert("Erro ao salvar gasto");
+  });
 }
+
+
 
 function listarGastos() {
   fetch("https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec")
@@ -42,7 +37,7 @@ function listarGastos() {
         lista.appendChild(li);
       });
     });
-}
+} 
 
 window.onload = listarGastos;
 
@@ -77,4 +72,28 @@ function sincronizar() {
   });
   localStorage.removeItem("pendentes");
 }
+
+function carregarGastos() {
+  const url =
+    "https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec";
+
+  fetch(url)
+    .then(res => res.json())
+    .then(dados => {
+      const lista = document.getElementById("lista-gastos");
+      lista.innerHTML = "";
+
+      dados.reverse().forEach(linha => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${linha[1]}</strong> - R$ ${linha[2]}<br>
+          <small>${linha[0]}</small>
+        `;
+        lista.appendChild(li);
+      });
+    });
+}
+
+// Carregar quando abrir o app
+carregarGastos();
 
