@@ -1,14 +1,8 @@
 {
-  "name": "Controle Financeiro",
+  "name": "Minhas Finanças",
   "short_name": "Finanças",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2e7d32",
- "icons": [
-  {
-    "src": "icon.png",
-    "sizes": "512x512",
-    "type": "image/png"
-  }
-]
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a"
+}
