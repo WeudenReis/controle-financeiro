@@ -3,22 +3,20 @@ function salvarGasto() {
   const valor = document.getElementById("valor").value;
   const descricao = document.getElementById("descricao").value;
 
+  const formData = new FormData();
+  formData.append("categoria", categoria);
+  formData.append("valor", valor);
+  formData.append("descricao", descricao);
+
   fetch("https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      categoria,
-      valor,
-      descricao
-    })
+    body: formData
   })
   .then(() => {
-    alert("Gasto salvo com sucesso!");
+    alert("Gasto salvo!");
   })
   .catch(() => {
-    alert("Erro ao salvar gasto");
+    alert("Erro ao salvar");
   });
 }
 
@@ -28,25 +26,28 @@ function listarGastos() {
   fetch("https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec")
     .then(res => res.json())
     .then(dados => {
-      const lista = document.getElementById("lista-gastos");
-      lista.innerHTML = "";
+  const lista = document.getElementById("lista-gastos");
+  lista.innerHTML = "";
 
-      dados.forEach(linha => {
-        const li = document.createElement("li");
-        li.textContent = `${linha[0]} | ${linha[1]} - R$ ${linha[2]} (${linha[3]})`;
-        lista.appendChild(li);
-      });
-    });
-} 
+  dados.forEach(linha => {
+    const li = document.createElement("li");
+    li.textContent = `${linha[0]} | ${linha[1]} - R$ ${linha[2]} (${linha[3]})`;
+    lista.appendChild(li);
+  });
+
+  // ✅ TOTAL GERAL
+  const total = calcularTotal(dados);
+  document.getElementById("total").textContent =
+    "Total: R$ " + total.toFixed(2);
+});
+}
 
 window.onload = listarGastos;
 
 function calcularTotal(dados) {
   return dados.reduce((soma, linha) => soma + Number(linha[2]), 0);
 }
- const total = calcularTotal(dados);
-document.getElementById("total").textContent =
-  "Total: R$ " + total.toFixed(2);
+ 
  function totalPorCategoria(dados) {
   const mapa = {};
 
@@ -95,5 +96,5 @@ function carregarGastos() {
 }
 
 // Carregar quando abrir o app
-carregarGastos();
+
 
