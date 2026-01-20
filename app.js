@@ -3,22 +3,34 @@ function salvarGasto() {
   const valor = document.getElementById("valor").value;
   const descricao = document.getElementById("descricao").value;
 
-  const formData = new FormData();
-  formData.append("categoria", categoria);
-  formData.append("valor", valor);
-  formData.append("descricao", descricao);
+  if (!categoria || !valor) {
+    alert("Preencha categoria e valor");
+    return;
+  }
 
-  fetch("https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec", {
-    method: "POST",
-    body: formData
-  })
-  .then(() => {
-    alert("Gasto salvo!");
-  })
-  .catch(() => {
-    alert("Erro ao salvar");
-  });
+  const url =
+    "https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec" +
+    `?categoria=${encodeURIComponent(categoria)}` +
+    `&valor=${encodeURIComponent(valor)}` +
+    `&descricao=${encodeURIComponent(descricao)}`;
+
+  fetch(url)
+    .then(res => res.text()) // 👈 MUITO IMPORTANTE
+    .then(resposta => {
+      if (resposta === "SALVO") {
+        listarGastos();
+        alert("Gasto salvo!");
+      } else {
+        alert("Erro ao salvar");
+        console.error(resposta);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Erro ao salvar");
+    });
 }
+
 
 
 
