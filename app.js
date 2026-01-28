@@ -102,9 +102,17 @@ function deletarGasto(index, dados) {
   if (confirm("Tem certeza que deseja deletar este gasto?")) {
     // Deleta da planilha do Google Sheets
     const linha = dados[index];
+    if (!linha) {
+      alert("Erro: Gasto não encontrado");
+      return;
+    }
+    
     const url = 
       "https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec" +
       `?acao=deletar&data=${encodeURIComponent(linha[0])}&categoria=${encodeURIComponent(linha[1])}&valor=${encodeURIComponent(linha[2])}`;
+    
+    // Desabilita o botão para evitar cliques duplos
+    event.target.disabled = true;
     
     fetch(url)
       .then(res => res.text())
@@ -113,12 +121,12 @@ function deletarGasto(index, dados) {
         // Aguarda um pouco antes de recarregar para garantir que a deleção foi processada
         setTimeout(() => {
           listarGastos();
-          alert("Gasto deletado com sucesso!");
-        }, 500);
+        }, 800);
       })
       .catch(err => {
         console.error("Erro ao deletar:", err);
         alert("Erro ao deletar. Tente novamente.");
+        event.target.disabled = false;
       });
   }
 }
@@ -165,10 +173,10 @@ function listarGastos() {
       if (dadosLimpos.length === 0) {
         lista.innerHTML = "<p class='sem-dados'>Nenhum gasto registrado</p>";
       } else {
-        dadosLimpos.reverse().forEach((linha, index) => {
+        // Não reverter os dados para manter os índices corretos
+        dadosLimpos.forEach((linha, index) => {
           const div = document.createElement("div");
           div.className = "gasto-item";
-          const realIndex = dadosLimpos.length - 1 - index;
           div.innerHTML = `
             <div class="gasto-info">
               <div class="gasto-categoria">${linha[1]}</div>
@@ -178,8 +186,8 @@ function listarGastos() {
             <div class="gasto-actions">
               <div class="gasto-valor">R$ ${parseFloat(linha[2]).toFixed(2)}</div>
               <div class="action-buttons">
-                <button class="btn-acao btn-editar" onclick="editarGasto(${realIndex}, gastosDados)" title="Editar">✎</button>
-                <button class="btn-acao btn-deletar" onclick="deletarGasto(${realIndex}, gastosDados)" title="Deletar">✕</button>
+                <button class="btn-acao btn-editar" onclick="editarGasto(${index}, gastosDados)" title="Editar">✎</button>
+                <button class="btn-acao btn-deletar" onclick="deletarGasto(${index}, gastosDados)" title="Deletar">✕</button>
               </div>
             </div>
           `;
@@ -414,9 +422,6 @@ window.onload = function() {
   initTheme();
   listarGastos();
 };
-
-// Recarregar gastos a cada 30 segundos
-setInterval(listarGastos, 30000);
 
 // Permitir enviar chat com Enter
 document.addEventListener("DOMContentLoaded", function() {
