@@ -21,8 +21,15 @@
 <body>
   <!-- HEADER -->
   <header class="header">
-    <h1>💰 Dashboard Financeiro</h1>
-    <p class="subtitle">Controle seus gastos em tempo real</p>
+    <div class="header-content">
+      <div>
+        <h1>💰 Dashboard Financeiro</h1>
+        <p class="subtitle">Controle seus gastos em tempo real</p>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle" title="Alternar tema">
+        <span class="theme-icon">🌙</span>
+      </button>
+    </div>
   </header>
 
   <div class="container">
@@ -109,19 +116,26 @@
       <div id="lista-gastos" class="gastos-list"></div>
     </section>
 
-    <!-- CHAT BOT -->
-    <section class="chatbot-section">
-      <h2>🤖 Assistente Financeiro</h2>
+  </div>
+
+  <!-- CHAT BOT FLUTUANTE -->
+  <div class="chatbot-floating">
+    <button class="chatbot-toggle" onclick="toggleChat()" title="Assistente Financeiro">💬</button>
+    <div class="chatbot-panel" id="chatbot-panel">
+      <div class="chatbot-header">
+        <h3>Assistente</h3>
+        <button class="chatbot-close" onclick="toggleChat()">×</button>
+      </div>
       <div id="chat-box" class="chat-box">
         <div class="chat-message bot-message">
-          <p>Olá! Sou seu assistente financeiro. Pergunte-me sobre seus gastos, categorias, ou totais!</p>
+          <p>Olá! Pergunte sobre seus gastos 💰</p>
         </div>
       </div>
       <div class="chat-input-area">
-        <input type="text" id="chat-input" class="chat-input" placeholder="Pergunte algo... Ex: Qual é o total? / Quanto gastei em Casa?" />
-        <button class="btn-enviar-chat" onclick="enviarPergunta()">Enviar</button>
+        <input type="text" id="chat-input" class="chat-input" placeholder="Ex: Total? Quanto em Casa?" />
+        <button class="btn-enviar-chat" onclick="enviarPergunta()">→</button>
       </div>
-    </section>
+    </div>
   </div>
 
   <footer>
