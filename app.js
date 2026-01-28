@@ -29,6 +29,9 @@ function updateThemeIcon() {
   }
 }
 
+// Variáveis globais
+let gastoEditando = undefined;
+
 function salvarGasto(event) {
   event.preventDefault();
 
@@ -41,6 +44,31 @@ function salvarGasto(event) {
     return;
   }
 
+  // Se está editando um gasto, deleta o antigo primeiro
+  if (window.gastoEditando !== undefined && gastosDados[window.gastoEditando]) {
+    const gastoAntigo = gastosDados[window.gastoEditando];
+    const urlDelete = 
+      "https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec" +
+      `?acao=deletar&data=${encodeURIComponent(gastoAntigo[0])}&categoria=${encodeURIComponent(gastoAntigo[1])}&valor=${encodeURIComponent(gastoAntigo[2])}`;
+    
+    fetch(urlDelete)
+      .then(() => {
+        // Depois de deletar, salva o novo
+        salvarNovoGasto(categoria, valor, descricao);
+      })
+      .catch(() => {
+        // Se falhar delete, tenta salvar mesmo assim
+        salvarNovoGasto(categoria, valor, descricao);
+      });
+    
+    window.gastoEditando = undefined;
+  } else {
+    // Se não está editando, apenas salva
+    salvarNovoGasto(categoria, valor, descricao);
+  }
+}
+
+function salvarNovoGasto(categoria, valor, descricao) {
   const url =
     "https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec" +
     `?categoria=${encodeURIComponent(categoria)}` +
@@ -54,7 +82,9 @@ function salvarGasto(event) {
         document.getElementById("categoria").value = "";
         document.getElementById("valor").value = "";
         document.getElementById("descricao").value = "";
-        listarGastos();
+        setTimeout(() => {
+          listarGastos();
+        }, 500);
         alert("Gasto salvo com sucesso!");
       } else {
         alert("Erro ao salvar");
@@ -79,15 +109,16 @@ function deletarGasto(index, dados) {
     fetch(url)
       .then(res => res.text())
       .then(resposta => {
-        if (resposta === "DELETADO" || resposta.includes("deletado")) {
+        console.log("Resposta delete:", resposta);
+        // Aguarda um pouco antes de recarregar para garantir que a deleção foi processada
+        setTimeout(() => {
           listarGastos();
           alert("Gasto deletado com sucesso!");
-        }
+        }, 500);
       })
       .catch(err => {
         console.error("Erro ao deletar:", err);
-        alert("Deletado (será sincronizado)");
-        listarGastos();
+        alert("Erro ao deletar. Tente novamente.");
       });
   }
 }
@@ -98,20 +129,17 @@ function editarGasto(index, dados) {
   const categoria = linha[1];
   const valor = linha[2];
   const descricao = linha[3];
-  const data = linha[0];
 
   // Preenche o formulário com os valores do gasto
   document.getElementById("categoria").value = categoria;
   document.getElementById("valor").value = valor;
   document.getElementById("descricao").value = descricao || "";
 
-  // Deleta o gasto anterior
-  setTimeout(() => {
-    deletarGasto(index, dados);
-  }, 100);
-
   // Scroll para o formulário
   document.querySelector(".form-section").scrollIntoView({ behavior: "smooth" });
+
+  // Marca que este é um gasto para ser editado/deletado
+  window.gastoEditando = index;
 }
 
 let chartPizza = null;
