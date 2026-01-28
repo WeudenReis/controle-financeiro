@@ -100,34 +100,43 @@ function salvarNovoGasto(categoria, valor, descricao) {
 // Função para deletar um gasto
 function deletarGasto(index, dados) {
   if (confirm("Tem certeza que deseja deletar este gasto?")) {
-    // Deleta da planilha do Google Sheets
     const linha = dados[index];
     if (!linha) {
       alert("Erro: Gasto não encontrado");
       return;
     }
     
+    console.log("Deletando gasto no índice", index, ":", linha);
+    
     const url = 
       "https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec" +
       `?acao=deletar&data=${encodeURIComponent(linha[0])}&categoria=${encodeURIComponent(linha[1])}&valor=${encodeURIComponent(linha[2])}`;
     
-    // Desabilita o botão para evitar cliques duplos
-    event.target.disabled = true;
+    console.log("Enviando DELETE para:", url);
     
-    fetch(url)
-      .then(res => res.text())
-      .then(resposta => {
-        console.log("Resposta delete:", resposta);
-        // Aguarda um pouco antes de recarregar para garantir que a deleção foi processada
-        setTimeout(() => {
-          listarGastos();
-        }, 800);
-      })
-      .catch(err => {
-        console.error("Erro ao deletar:", err);
-        alert("Erro ao deletar. Tente novamente.");
-        event.target.disabled = false;
-      });
+    fetch(url, {
+      method: 'GET',
+      cache: 'no-cache'
+    })
+    .then(res => {
+      console.log("Status da resposta:", res.status);
+      return res.text();
+    })
+    .then(resposta => {
+      console.log("Resposta bruta do Google Sheets:", resposta);
+      console.log("Tipo da resposta:", typeof resposta);
+      
+      // Espera 2 segundos e depois recarrega os dados
+      setTimeout(() => {
+        console.log("Aguardando 2 segundos e recarregando lista...");
+        listarGastos();
+        alert("Gasto deletado com sucesso! A lista foi atualizada.");
+      }, 2000);
+    })
+    .catch(err => {
+      console.error("Erro ao deletar gasto:", err);
+      alert("Erro ao deletar: " + err.message);
+    });
   }
 }
 
@@ -155,14 +164,23 @@ let chartBarra = null;
 let gastosDados = [];
 
 function listarGastos() {
-  fetch("https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec")
+  const urlComTimestamp = "https://script.google.com/macros/s/AKfycbz9JAR1w_7Fm7TyYDIg_4AaOgOMF_mR76E0uBWINLG1orLKbq9y2RW8mhRIowUSXLHXQw/exec?t=" + new Date().getTime();
+  
+  fetch(urlComTimestamp, {
+    method: 'GET',
+    cache: 'no-cache'
+  })
     .then(res => res.json())
     .then(dados => {
+      console.log("Dados recebidos do Google Sheets:", dados);
+      
       // Remove a primeira linha (header) e filtra linhas vazias
       let dadosLimpos = dados.slice(1).filter(linha => {
         // Verifica se a linha tem dados válidos (categoria e valor)
         return linha && linha[1] && linha[1].trim() && linha[2] && !isNaN(Number(linha[2]));
       });
+      
+      console.log("Dados após limpeza:", dadosLimpos);
       
       gastosDados = dadosLimpos; // Armazena os dados globalmente para usar no chat
 
@@ -217,6 +235,7 @@ function listarGastos() {
     })
     .catch(err => {
       console.error("Erro ao carregar gastos:", err);
+      alert("Erro ao carregar gastos. Verifique sua conexão.");
     });
 }
 
