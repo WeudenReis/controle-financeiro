@@ -97,10 +97,30 @@
       </div>
     </section>
 
+    <!-- TOTAL POR CATEGORIA -->
+    <section class="category-total-section">
+      <h2>📊 Total por Categoria</h2>
+      <div id="categoria-totais" class="categoria-totais-list"></div>
+    </section>
+
     <!-- HISTÓRICO DE GASTOS -->
     <section class="history-section">
       <h2>📋 Histórico de Gastos</h2>
       <div id="lista-gastos" class="gastos-list"></div>
+    </section>
+
+    <!-- CHAT BOT -->
+    <section class="chatbot-section">
+      <h2>🤖 Assistente Financeiro</h2>
+      <div id="chat-box" class="chat-box">
+        <div class="chat-message bot-message">
+          <p>Olá! Sou seu assistente financeiro. Pergunte-me sobre seus gastos, categorias, ou totais!</p>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="chat-input" class="chat-input" placeholder="Pergunte algo... Ex: Qual é o total? / Quanto gastei em Casa?" />
+        <button class="btn-enviar-chat" onclick="enviarPergunta()">Enviar</button>
+      </div>
     </section>
   </div>
 
