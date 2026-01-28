@@ -1,10 +1,10 @@
 {
-  "name": "Controle Financeiro",
+  "name": "Dashboard Financeiro",
   "short_name": "Finanças",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#2e7d32",
+  "theme_color": "#1a1a2e",
   "icons": [
     {
       "src": "icon.png",
@@ -13,3 +13,4 @@
     }
   ]
 }
+
