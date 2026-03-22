@@ -130,7 +130,7 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
               {showValues ? 'Ocultar' : 'Mostrar'}
             </button>
           </div>
-          <div className="flex gap-5 mt-3">
+          <div className="flex gap-5 mt-3 flex-wrap">
             <div>
               <p className="text-[11px] text-muted-foreground mb-0.5">↑ Receitas</p>
               <p className="text-sm font-bold text-primary">{v(totalReceitas)}</p>
@@ -139,6 +139,12 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
               <p className="text-[11px] text-muted-foreground mb-0.5">↓ Despesas</p>
               <p className="text-sm font-bold text-red-500">{v(totalDespesas)}</p>
             </div>
+            {monthlyIncome > 0 && (
+              <div>
+                <p className="text-[11px] text-muted-foreground mb-0.5">💼 Renda mensal</p>
+                <p className="text-sm font-bold text-blue-400">{v(monthlyIncome)}</p>
+              </div>
+            )}
             <div className="ml-auto">
               <p className="text-[11px] text-muted-foreground mb-0.5 text-right">Comprometido</p>
               <p className="text-sm font-bold text-amber-500 text-right">{pct}%</p>
