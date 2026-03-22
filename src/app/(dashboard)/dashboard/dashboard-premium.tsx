@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { TrendingUp, TrendingDown, DollarSign, Plus, FileText, LogOut, Settings, Sparkles } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, Plus, FileText, LogOut, Settings, Sparkles, Eye, EyeOff } from 'lucide-react'
 import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import TransactionForm from './transaction-form'
 import TransactionList from './transaction-list'
@@ -18,10 +18,12 @@ interface Props {
 
 const COLORS = ['#2dd4bf','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#10b981']
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' })
+const fmtHide = () => 'R$ ••••••'
 
 export default function DashboardPremium({ transactions, profile, user }: Props) {
-  const [showForm, setShowForm] = useState(false)
-  const [localTx, setLocalTx]  = useState(transactions)
+  const [showForm, setShowForm]   = useState(false)
+  const [localTx, setLocalTx]     = useState(transactions)
+  const [showValues, setShowValues] = useState(true)
   const { open: showAI, setOpen: setShowAI } = useAIChat()
 
   const totalReceitas = localTx.filter(t=>t.type==='receita').reduce((s,t)=>s+Number(t.amount),0)
@@ -55,10 +57,11 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
   const nome = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'você'
   const hora  = new Date().getHours()
   const saudacao = hora<12 ? 'Bom dia' : hora<18 ? 'Boa tarde' : 'Boa noite'
+  const v = (val: number) => showValues ? fmt(val) : fmtHide()
 
   return (
     <div className="page-bg min-h-screen">
-      {/* Orbs de fundo decorativos */}
+      {/* Orbs de fundo */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-primary/8 blur-[100px]"/>
         <div className="absolute top-1/2 -right-40 w-80 h-80 rounded-full bg-blue-500/6 blur-[100px]"/>
@@ -74,7 +77,15 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
           </div>
           <div className="flex items-center gap-1.5">
             <ThemeToggle isCollapsed className="w-9 h-9 p-0 justify-center rounded-xl" />
-            {/* Botão IA no header — abre o mesmo chat do botão flutuante */}
+            {/* Ocultar/mostrar valores */}
+            <button
+              onClick={() => setShowValues(v => !v)}
+              className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/50 dark:hover:bg-white/5 text-muted-foreground transition"
+              title={showValues ? 'Ocultar valores' : 'Mostrar valores'}
+            >
+              {showValues ? <Eye size={17}/> : <EyeOff size={17}/>}
+            </button>
+            {/* IA */}
             <button
               onClick={()=>setShowAI(!showAI)}
               className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${showAI?'bg-primary/20 text-primary':'hover:bg-white/50 dark:hover:bg-white/5 text-muted-foreground'}`}
@@ -94,19 +105,58 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
 
       <main className="relative z-10 max-w-6xl mx-auto px-4 pt-5 pb-28 md:pb-10 space-y-5">
 
+        {/* ── Hero card: Saldo disponível ── */}
+        <div
+          className="glass-card p-6 relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, hsl(var(--primary)/0.15) 0%, hsl(var(--primary)/0.05) 100%)',
+            border: '1px solid hsl(var(--primary)/0.2)',
+          }}
+        >
+          {/* Orb decorativo */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none"/>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">Saldo disponível</p>
+          <div className="flex items-end justify-between">
+            <p className={`text-4xl font-black tracking-tight transition-all ${saldo >= 0 ? 'text-foreground' : 'text-destructive'}`}>
+              {showValues ? fmt(saldo) : 'R$ ••••••'}
+            </p>
+            <button
+              onClick={() => setShowValues(v => !v)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition px-2 py-1 rounded-lg hover:bg-white/20"
+            >
+              {showValues ? <EyeOff size={14}/> : <Eye size={14}/>}
+              {showValues ? 'Ocultar' : 'Mostrar'}
+            </button>
+          </div>
+          <div className="flex gap-5 mt-3">
+            <div>
+              <p className="text-[11px] text-muted-foreground mb-0.5">↑ Receitas</p>
+              <p className="text-sm font-bold text-primary">{v(totalReceitas)}</p>
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground mb-0.5">↓ Despesas</p>
+              <p className="text-sm font-bold text-red-500">{v(totalDespesas)}</p>
+            </div>
+            <div className="ml-auto">
+              <p className="text-[11px] text-muted-foreground mb-0.5 text-right">Comprometido</p>
+              <p className="text-sm font-bold text-amber-500 text-right">{pct}%</p>
+            </div>
+          </div>
+        </div>
+
         {/* ── Cards de resumo ── */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            {label:'Receitas', value:fmt(totalReceitas), icon:TrendingUp,  color:'text-primary',   bg:'bg-primary/10'},
-            {label:'Despesas', value:fmt(totalDespesas), icon:TrendingDown, color:'text-red-500',   bg:'bg-red-500/10'},
-            {label:'Saldo',    value:fmt(saldo),         icon:DollarSign,  color:saldo>=0?'text-primary':'text-destructive', bg:saldo>=0?'bg-primary/10':'bg-destructive/10'},
+            {label:'Receitas', value:v(totalReceitas), icon:TrendingUp,  color:'text-primary',   bg:'bg-primary/10'},
+            {label:'Despesas', value:v(totalDespesas), icon:TrendingDown, color:'text-red-500',   bg:'bg-red-500/10'},
+            {label:'Saldo',    value:v(saldo),         icon:DollarSign,  color:saldo>=0?'text-primary':'text-destructive', bg:saldo>=0?'bg-primary/10':'bg-destructive/10'},
           ].map(c=>(
             <div key={c.label} className="glass-card p-4 space-y-2.5">
               <div className={`w-9 h-9 rounded-2xl ${c.bg} flex items-center justify-center`}>
                 <c.icon size={16} className={c.color}/>
               </div>
               <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wide">{c.label}</p>
-              <p className={`text-xs font-bold leading-tight ${c.color}`}>{c.value}</p>
+              <p className={`text-xs font-bold leading-tight ${c.color} ${!showValues ? 'blur-sm select-none' : ''}`}>{c.value}</p>
             </div>
           ))}
         </div>
@@ -123,7 +173,6 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
 
         {/* ── Gráficos ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Área */}
           <div className="glass-card p-5">
             <h3 className="text-sm font-bold text-foreground mb-4">Últimas movimentações</h3>
             {areaData.length > 0 ? (
@@ -137,21 +186,18 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
                   </defs>
                   <XAxis dataKey="date" tick={{fontSize:10}} axisLine={false} tickLine={false}/>
                   <YAxis tick={{fontSize:10}} axisLine={false} tickLine={false} width={50}
-                    tickFormatter={v=>v.toLocaleString('pt-BR',{notation:'compact'})}/>
-                  <Tooltip formatter={(v:any)=>fmt(v)} contentStyle={{fontSize:11,borderRadius:8}}/>
+                    tickFormatter={val => `R$${(val/1000).toFixed(1)}k`}/>
+                  <Tooltip formatter={(val:any)=>fmt(val)} contentStyle={{fontSize:11,borderRadius:8}}/>
                   <Area type="monotone" dataKey="valor" stroke="hsl(var(--primary))" fill="url(#gArea)" strokeWidth={2}/>
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[180px] flex items-center justify-center text-muted-foreground text-xs">
-                Sem dados ainda
-              </div>
+              <div className="h-[180px] flex items-center justify-center text-muted-foreground text-xs">Sem dados ainda</div>
             )}
           </div>
 
-          {/* Pizza */}
           <div className="glass-card p-5">
-            <h3 className="text-sm font-bold text-foreground mb-4">Gastos por categoria</h3>
+            <h3 className="text-sm font-bold text-foreground mb-4">Despesas por categoria</h3>
             {pieData.length > 0 ? (
               <ResponsiveContainer width="100%" height={180}>
                 <PieChart>
@@ -159,19 +205,17 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
                     paddingAngle={3} dataKey="value">
                     {pieData.map((_,i)=><Cell key={i} fill={COLORS[i%COLORS.length]}/>)}
                   </Pie>
-                  <Tooltip formatter={(v:any)=>fmt(v)} contentStyle={{fontSize:11,borderRadius:8}}/>
+                  <Tooltip formatter={(val:any)=>fmt(val)} contentStyle={{fontSize:11,borderRadius:8}}/>
                   <Legend iconType="circle" iconSize={8} wrapperStyle={{fontSize:11}}/>
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[180px] flex items-center justify-center text-muted-foreground text-xs">
-                Sem despesas registradas
-              </div>
+              <div className="h-[180px] flex items-center justify-center text-muted-foreground text-xs">Sem despesas registradas</div>
             )}
           </div>
         </div>
 
-        {/* ── Barra de saúde financeira ── */}
+        {/* ── Saúde financeira ── */}
         <div className="glass-card p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-foreground">Saúde financeira</h3>
@@ -189,18 +233,14 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
           </p>
         </div>
 
-        {/* ── Lista de transações ── */}
+        {/* ── Transações ── */}
         <TransactionList transactions={localTx} onUpdate={setLocalTx}/>
       </main>
 
-      {/* ── Chatbot unificado (botão flutuante + chat) ── */}
-      <Chatbot
-        open={showAI}
-        onOpenChange={setShowAI}
-        context={aiContext}
-      />
+      {/* Chatbot unificado */}
+      <Chatbot open={showAI} onOpenChange={setShowAI} context={aiContext}/>
 
-      {/* ── Modal nova transação ── */}
+      {/* Modal nova transação */}
       {showForm && (
         <TransactionForm
           onClose={()=>setShowForm(false)}
