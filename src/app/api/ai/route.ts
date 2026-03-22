@@ -8,36 +8,37 @@ export async function POST(req: Request) {
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) return Response.json({ error: 'Chave Gemini não configurada' }, { status: 500 })
 
-    // Tenta gemini-2.0-flash primeiro, fallback para gemini-1.5-flash
-    const models = [
-      'gemini-2.0-flash',
-      'gemini-1.5-flash-latest',
-      'gemini-1.5-flash',
-    ]
+    const systemPrompt = `Você é um assistente financeiro pessoal integrado a um app brasileiro.
 
-    const systemPrompt = `Você é um assistente financeiro pessoal inteligente integrado a um app brasileiro.
-
-Dados financeiros do usuário:
+Dados do usuário:
 - Mês: ${context?.monthYear || new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}
 - Receitas: R$ ${Number(context?.totalIncome||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
 - Despesas: R$ ${Number(context?.totalExpenses||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
 - Saldo: R$ ${Number(context?.balance||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
 - Transações: ${JSON.stringify(context?.transactions||[])}
 
-Regras: responda em português BR, seja direto (3-4 linhas), use os dados reais, 1-2 emojis.
+Responda em português BR, seja direto (3-4 linhas), use dados reais, 1-2 emojis.
 Pergunta: "${prompt}"
 Resposta:`
 
-    let lastError = ''
-    for (const model of models) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
-      const res = await fetch(url, {
+    // Tenta modelos em ordem — usa v1 para gemini-pro, v1beta para outros
+    const attempts = [
+      { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}` },
+      { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}` },
+      { url: `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}` },
+      { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}` },
+    ]
+
+    const body = JSON.stringify({
+      contents: [{ parts: [{ text: systemPrompt }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 512 },
+    })
+
+    for (const attempt of attempts) {
+      const res = await fetch(attempt.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: systemPrompt }] }],
-          generationConfig: { temperature: 0.3, maxOutputTokens: 512 },
-        }),
+        body,
       })
 
       if (res.ok) {
@@ -48,14 +49,14 @@ Resposta:`
       }
 
       const errText = await res.text()
-      lastError = `${model}: ${res.status} ${errText.slice(0,200)}`
-      console.error('Gemini error:', lastError)
+      console.error(`Gemini ${attempt.url.split('/models/')[1]?.split(':')[0]}: ${res.status}`, errText.slice(0, 150))
 
-      // 403 em todos = chave inválida, não adianta tentar outros modelos
-      if (res.status === 403) break
+      if (res.status === 403 || res.status === 401) {
+        return Response.json({ error: 'Chave de API inválida. Verifique GEMINI_API_KEY no Vercel.' }, { status: 500 })
+      }
     }
 
-    return Response.json({ error: `Gemini indisponível: ${lastError}` }, { status: 500 })
+    return Response.json({ error: 'Todos os modelos Gemini falharam. Tente novamente em breve.' }, { status: 500 })
   } catch (e: any) {
     console.error('AI Route Error:', e)
     return Response.json({ error: 'Erro interno' }, { status: 500 })
