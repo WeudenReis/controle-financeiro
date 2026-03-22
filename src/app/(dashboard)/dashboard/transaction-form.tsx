@@ -108,30 +108,31 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
       onClick={onClose}
     >
       <div
         className="w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden animate-slideUp"
         style={{
-          background: 'rgba(255,255,255,0.96)',
-          backdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255,255,255,0.9)',
+          background: 'rgba(30, 41, 59, 0.85)',
+          backdropFilter: 'blur(32px)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          WebkitBackdropFilter: 'blur(32px)',
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle mobile */}
         <div className="flex justify-center pt-3 pb-1 md:hidden">
-          <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-700" />
+          <div className="w-10 h-1 rounded-full bg-gray-500" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800"
-          style={{ background: 'transparent' }}>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Nova Transação</h2>
+        <div className="flex items-center justify-between px-6 pt-4 pb-3 border-b"
+          style={{ borderColor: 'rgba(255, 255, 255, 0.08)', background: 'transparent' }}>
+          <h2 className="text-lg font-bold text-white">Nova Transação</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500"
+            className="p-2 rounded-xl hover:bg-white/10 transition text-gray-400"
           >
             <X size={18} />
           </button>
@@ -185,7 +186,7 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
 
           {/* ── Descrição ── */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">
               Descrição *
             </label>
             <input
@@ -193,20 +194,20 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
               placeholder={isDespesa ? 'Ex: Almoço, Netflix, Conta de luz...' : 'Ex: Salário, Freela, Dividendos...'}
               value={description}
               onChange={e => { setDescription(e.target.value); setError('') }}
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all text-white placeholder:text-gray-500"
               style={{
-                background: 'rgba(0,0,0,0.04)',
-                border: '1.5px solid rgba(0,0,0,0.08)',
-                color: 'inherit',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1.5px solid rgba(255, 255, 255, 0.12)',
+                color: 'white',
               }}
-              onFocus={e => { e.target.style.borderColor = 'hsl(var(--primary))'; e.target.style.boxShadow = '0 0 0 3px rgba(45,212,191,0.15)' }}
-              onBlur={e  => { e.target.style.borderColor = 'rgba(0,0,0,0.08)'; e.target.style.boxShadow = 'none' }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(45,212,191,0.4)'; e.target.style.background = 'rgba(45,212,191,0.08)' }}
+              onBlur={e  => { e.target.style.borderColor = 'rgba(255, 255, 255, 0.12)'; e.target.style.background = 'rgba(255, 255, 255, 0.08)' }}
             />
           </div>
 
           {/* ── Valor ── */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">
               Valor (R$) *
             </label>
             {/* Container clicável que foca o input ao clicar em qualquer parte */}
@@ -226,7 +227,7 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
               </span>
 
               {/* Prefixo R$ */}
-              <span className="text-base font-bold text-gray-400 dark:text-gray-500 flex-shrink-0 select-none">
+              <span className="text-base font-bold text-gray-500 flex-shrink-0 select-none">
                 R$
               </span>
 
@@ -238,7 +239,7 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
                 placeholder="0,00"
                 value={amountRaw}
                 onChange={handleAmountChange}
-                className="flex-1 bg-transparent outline-none text-2xl font-black placeholder:text-gray-300 dark:placeholder:text-gray-600 min-w-0"
+                className="flex-1 bg-transparent outline-none text-2xl font-black placeholder:text-gray-600 min-w-0"
                 style={{ color: isDespesa ? '#ef4444' : '#10b981' }}
               />
             </div>
@@ -246,7 +247,7 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
 
           {/* ── Categorias ── */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">
               Categoria *
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -273,14 +274,14 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
           {/* ── Status + Data ── */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">
                 Status
               </label>
               <select
                 value={status}
                 onChange={e => setStatus(e.target.value)}
-                className="w-full px-3 py-3 rounded-xl text-sm outline-none border transition-all"
-                style={{ background: 'rgba(0,0,0,0.04)', borderColor: 'rgba(0,0,0,0.08)', color: 'inherit' }}
+                className="w-full px-3 py-3 rounded-xl text-sm outline-none border transition-all text-white"
+                style={{ background: 'rgba(255, 255, 255, 0.08)', borderColor: 'rgba(255, 255, 255, 0.12)', color: 'white' }}
               >
                 <option value="pendente">⏳ Pendente</option>
                 <option value="pago">✅ {isDespesa ? 'Pago' : 'Recebido'}</option>
@@ -288,22 +289,22 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">
                 Data
               </label>
               <input
                 type="date"
                 value={date}
                 onChange={e => setDate(e.target.value)}
-                className="w-full px-3 py-3 rounded-xl text-sm outline-none border transition-all"
-                style={{ background: 'rgba(0,0,0,0.04)', borderColor: 'rgba(0,0,0,0.08)', color: 'inherit' }}
+                className="w-full px-3 py-3 rounded-xl text-sm outline-none border transition-all text-white"
+                style={{ background: 'rgba(255, 255, 255, 0.08)', borderColor: 'rgba(255, 255, 255, 0.12)', color: 'white' }}
               />
             </div>
           </div>
 
           {/* ── Notas ── */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">
               Notas (opcional)
             </label>
             <textarea
@@ -311,31 +312,32 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none border transition-all resize-none"
-              style={{ background: 'rgba(0,0,0,0.04)', borderColor: 'rgba(0,0,0,0.08)', color: 'inherit' }}
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none border transition-all resize-none text-white placeholder:text-gray-500"
+              style={{ background: 'rgba(255, 255, 255, 0.08)', borderColor: 'rgba(255, 255, 255, 0.12)', color: 'white' }}
             />
           </div>
 
           {/* ── Recorrente ── */}
           <div
-            className="flex items-center justify-between p-4 rounded-2xl bg-gray-100 dark:bg-gray-800/60 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            className="flex items-center justify-between p-4 rounded-2xl cursor-pointer hover:bg-opacity-80 transition"
+            style={{ background: 'rgba(255, 255, 255, 0.08)' }}
             onClick={() => setRecurring(r => !r)}
           >
             <div className="flex items-center gap-2.5">
-              <RefreshCw size={15} className="text-gray-500" />
+              <RefreshCw size={15} className="text-gray-400" />
               <div>
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Transação recorrente</p>
-                <p className="text-xs text-gray-500">Repete todo mês</p>
+                <p className="text-sm font-semibold text-white">Transação recorrente</p>
+                <p className="text-xs text-gray-400">Repete todo mês</p>
               </div>
             </div>
-            <div className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${recurring ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}>
+            <div className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${recurring ? 'bg-primary' : 'bg-gray-600'}`}>
               <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${recurring ? 'translate-x-5' : ''}`} />
             </div>
           </div>
 
           {/* ── Erro ── */}
           {error && (
-            <div className="flex items-start gap-2.5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-xl">
+            <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-xl">
               <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -346,7 +348,8 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition active:scale-95"
+              className="flex-1 px-4 py-3.5 rounded-xl text-white font-semibold text-sm hover:bg-opacity-80 transition active:scale-95"
+              style={{ background: 'rgba(255, 255, 255, 0.08)' }}
             >
               Cancelar
             </button>
@@ -360,8 +363,8 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
                   ? 'linear-gradient(135deg, #ef4444, #f97316)'
                   : 'linear-gradient(135deg, #10b981, #06b6d4)',
                 boxShadow: isDespesa
-                  ? '0 4px 14px rgba(239,68,68,0.4)'
-                  : '0 4px 14px rgba(16,185,129,0.4)',
+                  ? '0 4px 14px rgba(239,68,68,0.5)'
+                  : '0 4px 14px rgba(16,185,129,0.5)',
               }}
             >
               {loading ? (
