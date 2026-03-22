@@ -29,7 +29,9 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
   const totalReceitas = localTx.filter(t=>t.type==='receita').reduce((s,t)=>s+Number(t.amount),0)
   const totalDespesas = localTx.filter(t=>t.type==='despesa').reduce((s,t)=>s+Number(t.amount),0)
   const saldo = totalReceitas - totalDespesas
-  const pct   = totalReceitas > 0 ? Math.min(Math.round((totalDespesas/totalReceitas)*100),100) : 0
+  const monthlyIncome = Number(profile?.monthly_income || 0)
+  const baseRenda = monthlyIncome > 0 ? monthlyIncome : totalReceitas
+  const pct = baseRenda > 0 ? Math.min(Math.round((totalDespesas/baseRenda)*100),100) : 0
 
   const aiContext = {
     totalIncome: totalReceitas,
