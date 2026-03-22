@@ -120,6 +120,22 @@
     border: 1px solid rgba(255,255,255,0.08);
   }
 
+  /* Bottom nav glass — light mode */
+  .glass-nav-mobile {
+    background: rgba(248, 250, 252, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-top: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
+  }
+  .dark .glass-nav-mobile {
+    background: rgba(12, 16, 32, 0.88);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
+  }
+
   /* Gradient text */
   .gradient-text {
     background: linear-gradient(135deg, hsl(var(--primary)), #06b6d4);
