@@ -108,12 +108,7 @@ export default function TransactionForm({ onClose, onAdd }: Props) {
       onClick={onClose}
     >
       <div
-        className="w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden animate-slideUp max-h-[92vh] md:max-h-[90vh] flex flex-col"
-        style={{
-          background: 'rgba(255,255,255,0.96)',
-          backdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255,255,255,0.9)',
-        }}
+        className="glass-modal w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden animate-slideUp max-h-[92vh] md:max-h-[90vh] flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         {/* Handle mobile */}

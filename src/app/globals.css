@@ -116,8 +116,10 @@
     border: 1px solid rgba(255,255,255,0.90);
   }
   .dark .glass-modal {
-    background: rgba(22,28,50,0.95);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(15,20,40,0.97);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.10);
   }
 
   /* Bottom nav glass — light mode */
