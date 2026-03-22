@@ -1,64 +1,25 @@
 export const runtime = 'edge'
 
+const SUPABASE_URL = 'https://ldabhklgrsnhdqchgpdy.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkYWJoa2xncnNuaGRxY2hncGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4MzkyMzQsImV4cCI6MjA4NjQxNTIzNH0.Y5FvD9mTnIeNIoJJoqRW3CAl2fXYWWKfnpYJ4VyHmr4'
+
 export async function POST(req: Request) {
   try {
-    const { prompt, context } = await req.json()
-    if (!prompt) return Response.json({ error: 'Prompt obrigatório' }, { status: 400 })
+    const body = await req.json()
 
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) return Response.json({ error: 'Chave Gemini não configurada' }, { status: 500 })
-
-    const systemPrompt = `Você é um assistente financeiro pessoal integrado a um app brasileiro.
-
-Dados do usuário:
-- Mês: ${context?.monthYear || new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}
-- Receitas: R$ ${Number(context?.totalIncome||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
-- Despesas: R$ ${Number(context?.totalExpenses||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
-- Saldo: R$ ${Number(context?.balance||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
-- Transações: ${JSON.stringify(context?.transactions||[])}
-
-Responda em português BR, seja direto (3-4 linhas), use dados reais, 1-2 emojis.
-Pergunta: "${prompt}"
-Resposta:`
-
-    // Tenta modelos em ordem — usa v1 para gemini-pro, v1beta para outros
-    const attempts = [
-      { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}` },
-      { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}` },
-      { url: `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}` },
-      { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}` },
-    ]
-
-    const body = JSON.stringify({
-      contents: [{ parts: [{ text: systemPrompt }] }],
-      generationConfig: { temperature: 0.3, maxOutputTokens: 512 },
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify(body),
     })
 
-    for (const attempt of attempts) {
-      const res = await fetch(attempt.url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
-          || 'Não consegui gerar uma resposta.'
-        return Response.json({ answer })
-      }
-
-      const errText = await res.text()
-      console.error(`Gemini ${attempt.url.split('/models/')[1]?.split(':')[0]}: ${res.status}`, errText.slice(0, 150))
-
-      if (res.status === 403 || res.status === 401) {
-        return Response.json({ error: 'Chave de API inválida. Verifique GEMINI_API_KEY no Vercel.' }, { status: 500 })
-      }
-    }
-
-    return Response.json({ error: 'Todos os modelos Gemini falharam. Tente novamente em breve.' }, { status: 500 })
+    const data = await res.json()
+    return Response.json(data, { status: res.status })
   } catch (e: any) {
-    console.error('AI Route Error:', e)
-    return Response.json({ error: 'Erro interno' }, { status: 500 })
+    return Response.json({ error: 'Erro ao conectar com IA' }, { status: 500 })
   }
 }
