@@ -64,22 +64,24 @@ export async function shareWithPartner(partnerEmail: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Não autenticado.' }
 
-  // Busca o perfil do parceiro pelo email
-  const { data: partner, error: partnerErr } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('email', partnerEmail.trim().toLowerCase())
-    .single()
+  const email = partnerEmail.trim().toLowerCase()
+  if (!email) return { error: 'Informe um e-mail válido.' }
 
-  if (partnerErr || !partner) return { error: 'Parceiro(a) não encontrado. Verifique se o e-mail está correto e se a pessoa já fez login no app.' }
+  // Usa RPC que busca no auth.users (mais confiável que profiles)
+  const { data: partnerRows, error: rpcErr } = await supabase
+    .rpc('find_user_by_email', { p_email: email })
+
+  const partner = partnerRows?.[0]
+
+  if (rpcErr || !partner) {
+    return { error: 'Parceiro(a) não encontrado. Verifique se o e-mail está correto e se a pessoa já fez login no app.' }
+  }
   if (partner.id === user.id) return { error: 'Você não pode compartilhar consigo mesmo.' }
 
-  // Verifica se já existe um grupo para este usuário
   const { data: myProfile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
   let groupId = myProfile?.group_id || partner?.group_id
 
   if (!groupId) {
-    // Cria novo grupo
     const { data: group, error: groupErr } = await supabase
       .from('groups')
       .insert({ name: `${myProfile?.full_name || 'Família'}` })
@@ -89,7 +91,6 @@ export async function shareWithPartner(partnerEmail: string) {
     groupId = group.id
   }
 
-  // Atualiza ambos os perfis com o group_id
   const [r1, r2] = await Promise.all([
     supabase.from('profiles').upsert({ id: user.id, group_id: groupId }, { onConflict: 'id' }),
     supabase.from('profiles').upsert({ id: partner.id, group_id: groupId }, { onConflict: 'id' }),
@@ -97,7 +98,6 @@ export async function shareWithPartner(partnerEmail: string) {
   if (r1.error) return { error: r1.error.message }
   if (r2.error) return { error: r2.error.message }
 
-  // Adiciona membros à tabela group_members (upsert para evitar duplicatas)
   const { error: membersErr } = await supabase.from('group_members').upsert([
     { group_id: groupId, user_id: user.id, role: 'owner' },
     { group_id: groupId, user_id: partner.id, role: 'member' },
