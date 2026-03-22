@@ -28,13 +28,16 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
 
   const totalReceitas = localTx.filter(t=>t.type==='receita').reduce((s,t)=>s+Number(t.amount),0)
   const totalDespesas = localTx.filter(t=>t.type==='despesa').reduce((s,t)=>s+Number(t.amount),0)
-  const saldo = totalReceitas - totalDespesas
   const monthlyIncome = Number(profile?.monthly_income || 0)
+  // Se tem renda mensal configurada: saldo = renda mensal + receitas avulsas - despesas
+  // Se não tem: saldo = receitas - despesas (comportamento anterior)
+  const baseEntrada = monthlyIncome > 0 ? monthlyIncome + totalReceitas : totalReceitas
+  const saldo = baseEntrada - totalDespesas
   const baseRenda = monthlyIncome > 0 ? monthlyIncome : totalReceitas
   const pct = baseRenda > 0 ? Math.min(Math.round((totalDespesas/baseRenda)*100),100) : 0
 
   const aiContext = {
-    totalIncome: totalReceitas,
+    totalIncome: baseEntrada,
     totalExpenses: totalDespesas,
     balance: saldo,
     transactions: localTx,
@@ -131,20 +134,29 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
             </button>
           </div>
           <div className="flex gap-5 mt-3 flex-wrap">
-            <div>
-              <p className="text-[11px] text-muted-foreground mb-0.5">↑ Receitas</p>
-              <p className="text-sm font-bold text-primary">{v(totalReceitas)}</p>
-            </div>
+            {monthlyIncome > 0 ? (
+              <>
+                <div>
+                  <p className="text-[11px] text-muted-foreground mb-0.5">💼 Renda mensal</p>
+                  <p className="text-sm font-bold text-blue-400">{v(monthlyIncome)}</p>
+                </div>
+                {totalReceitas > 0 && (
+                  <div>
+                    <p className="text-[11px] text-muted-foreground mb-0.5">↑ Extra</p>
+                    <p className="text-sm font-bold text-primary">{v(totalReceitas)}</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div>
+                <p className="text-[11px] text-muted-foreground mb-0.5">↑ Receitas</p>
+                <p className="text-sm font-bold text-primary">{v(totalReceitas)}</p>
+              </div>
+            )}
             <div>
               <p className="text-[11px] text-muted-foreground mb-0.5">↓ Despesas</p>
               <p className="text-sm font-bold text-red-500">{v(totalDespesas)}</p>
             </div>
-            {monthlyIncome > 0 && (
-              <div>
-                <p className="text-[11px] text-muted-foreground mb-0.5">💼 Renda mensal</p>
-                <p className="text-sm font-bold text-blue-400">{v(monthlyIncome)}</p>
-              </div>
-            )}
             <div className="ml-auto">
               <p className="text-[11px] text-muted-foreground mb-0.5 text-right">Comprometido</p>
               <p className="text-sm font-bold text-amber-500 text-right">{pct}%</p>
@@ -155,7 +167,7 @@ export default function DashboardPremium({ transactions, profile, user }: Props)
         {/* ── Cards de resumo ── */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            {label:'Receitas', value:v(totalReceitas), icon:TrendingUp,  color:'text-primary',   bg:'bg-primary/10'},
+            {label: monthlyIncome > 0 ? 'Renda' : 'Receitas', value: v(monthlyIncome > 0 ? monthlyIncome : totalReceitas), icon:TrendingUp, color:'text-primary', bg:'bg-primary/10'},
             {label:'Despesas', value:v(totalDespesas), icon:TrendingDown, color:'text-red-500',   bg:'bg-red-500/10'},
             {label:'Saldo',    value:v(saldo),         icon:DollarSign,  color:saldo>=0?'text-primary':'text-destructive', bg:saldo>=0?'bg-primary/10':'bg-destructive/10'},
           ].map(c=>(
